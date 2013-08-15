@@ -19,6 +19,7 @@
 
 #include "../../core/Messenger.h"
 #include "../../core/network.h"
+#include "../../core/util.h"
 
 #include "configdir.h"
 #include "windows.h"
@@ -202,6 +203,11 @@ static void load_data(Messenger *m, char *path)
   fclose(fd);
 }
 
+static void toxic_logger(void * prompt, enum LOG_LEVEL log_level, char *fmt, va_list arg)
+{
+  vwprintw(((ToxWindow*)prompt)->window, fmt, arg);
+}
+
 int main(int argc, char *argv[])
 {
   char *user_config_dir = get_user_config_dir();
@@ -242,6 +248,7 @@ int main(int argc, char *argv[])
   init_term();
   Messenger *m = init_tox();
   ToxWindow *prompt = init_windows(m);
+  init_log(&toxic_logger, prompt);
   init_window_status();
 
   if(f_loadfromfile)
