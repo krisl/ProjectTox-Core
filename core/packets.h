@@ -4,6 +4,8 @@
  * This file is donated to the Tox Project.
  * Copyright 2013  plutooo
  */
+#ifndef PACKETS_H_PZ65T2IZ
+#define PACKETS_H_PZ65T2IZ
 
 typedef struct {
     uint8_t id[CLIENT_ID_SIZE];
@@ -35,3 +37,5 @@ typedef struct {
     uint8_t    padding[ENCRYPTION_PADDING];
 
 } __attribute__((packed)) pingres_t;
+
+#endif /* end of include guard: PACKETS_H_PZ65T2IZ */
