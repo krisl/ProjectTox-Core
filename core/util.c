@@ -6,12 +6,13 @@
  */
 
 #include <time.h>
-#include <stdint.h>
-#include <stdbool.h>
 
 #include "DHT.h"
 #include "packets.h"
+#include "util.h"
 
+static logfn logger;
+static void* data;
 uint64_t now()
 {
     return time(NULL);
@@ -42,4 +43,32 @@ bool id_eq(clientid_t* dest, clientid_t* src)
 void id_cpy(clientid_t* dest, clientid_t* src)
 {
     memcpy(dest, src, sizeof(clientid_t));
+}
+
+void init_log(logfn l, void * d) {
+  logger = l;
+  data = d;
+}
+
+void LOG(enum LOG_LEVEL log_level, char *fmt, ...) 
+{
+    //int ret;
+    va_list args;
+    va_start(args, fmt);
+    //ret = vprintf(fmt, args);
+    logger(data, log_level, fmt, args);
+    va_end(args);
+    //return ret;
+}
+
+void log_info(char *fmt, ...)
+{
+  //int ret;
+  va_list args;
+  va_start(args, fmt);
+  //ret = vprintf(fmt, args);
+  logger(data, LOG_LEVEL_INFO, fmt, args);
+  va_end(args);
+  //return ret;
+  
 }
