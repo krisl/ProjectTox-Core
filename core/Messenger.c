@@ -143,8 +143,10 @@ int m_addfriend(Messenger *m, uint8_t *address, uint8_t *data, uint16_t length)
     if (friend_id != -1) {
         uint32_t nospam;
         memcpy(&nospam, address + crypto_box_PUBLICKEYBYTES, sizeof(nospam));
-        if(m->friendlist[friend_id].friendrequest_nospam == nospam)
+        if(m->friendlist[friend_id].friendrequest_nospam == nospam) {
+            m->friendlist[friend_id].status = FRIEND_ADDED;  // reset status so friend request is sent again
             return FAERR_ALREADYSENT;
+        }
         m->friendlist[friend_id].friendrequest_nospam = nospam;
         return FAERR_SETNEWNOSPAM;
     }
