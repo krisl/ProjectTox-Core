@@ -20,7 +20,7 @@
  *  along with Tox.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+#include "util.h"
 #include "friend_requests.h"
 
 uint8_t self_public_key[crypto_box_PUBLICKEYBYTES];
@@ -33,8 +33,10 @@ uint8_t self_public_key[crypto_box_PUBLICKEYBYTES];
    return the number of peers it was routed through if it did not send it directly.*/
 int send_friendrequest(uint8_t * public_key, uint32_t nospam_num, uint8_t * data, uint32_t length)
 {
-    if(length + sizeof(nospam_num) > MAX_DATA_SIZE)
+    if(length + sizeof(nospam_num) > MAX_DATA_SIZE) {
+        LOG(LOG_LEVEL_INFO, "bad size %i\n", length);
         return -1;
+    }
     
     uint8_t temp[MAX_DATA_SIZE];
     memcpy(temp, &nospam_num, sizeof(nospam_num));
@@ -42,25 +44,31 @@ int send_friendrequest(uint8_t * public_key, uint32_t nospam_num, uint8_t * data
     uint8_t packet[MAX_DATA_SIZE];
     int len = create_request(packet, public_key, temp, length + sizeof(nospam_num), 32); /* 32 is friend request packet id */
 
-    if (len == -1)
+    if (len == -1) {
+        LOG(LOG_LEVEL_INFO, "bad create_request\n");
         return -1;
+    }
 
     IP_Port ip_port = DHT_getfriendip(public_key);
 
-    if (ip_port.ip.i == 1)
+    if (ip_port.ip.i == 1) {
+        LOG(LOG_LEVEL_INFO, "ip port is 1?\n");
         return -1;
+    }
 
     if (ip_port.ip.i != 0) {
         if (sendpacket(ip_port, packet, len) != -1)
             return 0;
+        LOG(LOG_LEVEL_INFO, "sendpacket failed\n");
         return -1;
     }
 
     int num = route_tofriend(public_key, packet, len);
 
-    if (num == 0)
+    if (num == 0) {
+        LOG(LOG_LEVEL_INFO, "NO FRIENDS!\n");
         return -1;
-
+    }
     return num;
 }
 

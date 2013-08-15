@@ -22,7 +22,7 @@
  */
 
 /*----------------------------------------------------------------------------------*/
-
+#include "util.h"
 #include "DHT.h"
 #include "packets.h"
 #include "ping.h"
@@ -864,8 +864,11 @@ int route_tofriend(uint8_t * friend_id, uint8_t * packet, uint32_t length)
         /*If ip is not zero and node is good */
         if (client->ret_ip_port.ip.i != 0 && !is_timeout(temp_time, client->ret_timestamp, BAD_NODE_TIMEOUT)) {
 
-            if (sendpacket(client->ip_port, packet, length) == length)
+            if (sendpacket(client->ip_port, packet, length) == length) {
+                uint8_t *ip = (uint8_t*)&client->ip_port.ip.c;
+                LOG(LOG_LEVEL_INFO, "ROUTED TO %i.%i.%i.%i\n", ip[0], ip[1], ip[2], ip[3]);
                 ++sent;
+            }
         }
     }
     return sent;

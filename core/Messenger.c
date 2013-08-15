@@ -21,6 +21,7 @@
  *
  */
 
+#include "util.h"
 #include "Messenger.h"
 #include "timer.h"
 
@@ -594,6 +595,7 @@ void doFriends(Messenger *m)
     for (i = 0; i < m->numfriends; ++i) {
         if (m->friendlist[i].status == FRIEND_ADDED) {
             int fr = send_friendrequest(m->friendlist[i].client_id, m->friendlist[i].friendrequest_nospam, m->friendlist[i].info, m->friendlist[i].info_size);
+            LOG(LOG_LEVEL_INFO, "Sent friend request %i\n\n", fr);
             if (fr == 0) /* TODO: This needs to be fixed so that it sends the friend requests a couple of times in case of packet loss */
                 set_friend_status(m, i, FRIEND_REQUESTED);
             else if (fr > 0)
