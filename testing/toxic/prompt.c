@@ -472,20 +472,17 @@ static void prompt_onDraw(ToxWindow *self)
     wrefresh(self->window);
 }
 
-static void prompt_onInit(ToxWindow *self, Messenger *m)
+ToxWindow * new_prompt()
 {
-    scrollok(self->window, 1);
-    cmd_help(self, m, NULL);
-    wclrtoeol(self->window);
-}
-
-ToxWindow new_prompt()
-{
-    ToxWindow ret;
-    memset(&ret, 0, sizeof(ret));
-    ret.onKey = &prompt_onKey;
-    ret.onDraw = &prompt_onDraw;
-    ret.onInit = &prompt_onInit;
-    strcpy(ret.title, "[prompt]");
-    return ret;
+    ToxWindow *w = new_window();
+    if (w) {
+        w->onKey = &prompt_onKey;
+        w->onDraw = &prompt_onDraw;
+        strcpy(w->title, "[prompt]"); 
+        
+        scrollok(w->window, 1);
+        cmd_help(w, NULL, NULL);
+        wclrtoeol(w->window);
+    }
+    return w;
 }

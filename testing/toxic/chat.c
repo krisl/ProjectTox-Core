@@ -384,27 +384,28 @@ void print_help(ChatContext *self)
     wattroff(self->history, COLOR_PAIR(2));
 }
 
-ToxWindow new_chat(Messenger *m, int friendnum)
+ToxWindow * new_chat(Messenger *m, int friendnum)
 {
-    ToxWindow ret;
-    memset(&ret, 0, sizeof(ret));
+    ToxWindow *w = new_window();
+    if (w) {
+        w->onKey = &chat_onKey;
+        w->onDraw = &chat_onDraw;
+        w->onMessage = &chat_onMessage;
+        w->onNickChange = &chat_onNickChange;
+        w->onStatusChange = &chat_onStatusChange;
+        w->onAction = &chat_onAction;
 
-    ret.onKey = &chat_onKey;
-    ret.onDraw = &chat_onDraw;
-    ret.onInit = &chat_onInit;
-    ret.onMessage = &chat_onMessage;
-    ret.onNickChange = &chat_onNickChange;
-    ret.onStatusChange = &chat_onStatusChange;
-    ret.onAction = &chat_onAction;
+        uint8_t nick[MAX_NAME_LENGTH] = {0};
+        getname(m, friendnum, (uint8_t *) &nick);
+        fix_name(nick);
 
-    uint8_t nick[MAX_NAME_LENGTH] = {0};
-    getname(m, friendnum, (uint8_t *) &nick);
-    fix_name(nick);
+        snprintf(w->title, sizeof(w->title), "[%s (%d)]", nick, friendnum);
 
-    snprintf(ret.title, sizeof(ret.title), "[%s (%d)]", nick, friendnum);
-
-    ChatContext *x = calloc(1, sizeof(ChatContext));
-    x->friendnum = friendnum;
-    ret.x = (void *) x;
-    return ret;
+        ChatContext *cc = calloc(1, sizeof(ChatContext));
+        cc->friendnum = friendnum;
+        w->x = (void *) cc;
+        chat_onInit(w, m);
+        set_active_window(w);
+    }
+    return w;
 }

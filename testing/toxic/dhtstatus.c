@@ -80,20 +80,14 @@ static void dhtstatus_onDraw(ToxWindow *self)
     wrefresh(self->window);
 }
 
-static void dhtstatus_onInit(ToxWindow *self, Messenger *m)
+ToxWindow * new_dhtstatus()
 {
-
-}
-
-ToxWindow new_dhtstatus()
-{
-    ToxWindow ret;
-    memset(&ret, 0, sizeof(ret));
-
-    ret.onKey          = &dhtstatus_onKey;
-    ret.onDraw         = &dhtstatus_onDraw;
-    ret.onInit         = &dhtstatus_onInit;
-
-    strcpy(ret.title, "[dht status]");
-    return ret;
+    ToxWindow *w = new_window();
+    if (w) {
+        w->onKey  = &dhtstatus_onKey;
+        w->onDraw = &dhtstatus_onDraw;
+        
+        strcpy(w->title, "[dht status]");
+    }
+    return w;
 }

@@ -3,6 +3,6 @@
 
 #include "windows.h"
 
-ToxWindow new_dhtstatus();
+ToxWindow * new_dhtstatus();
 
 #endif

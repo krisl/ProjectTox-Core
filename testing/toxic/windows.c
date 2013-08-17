@@ -9,7 +9,6 @@ extern int store_data(Messenger *m, char *path);
 static ToxWindow windows[MAX_WINDOWS_NUM];
 static ToxWindow *active_window;
 static ToxWindow *prompt;
-static Messenger *m;
 
 /* CALLBACKS START */
 void on_request(uint8_t *public_key, uint8_t *data, uint16_t length, void *userdata)
@@ -84,28 +83,24 @@ void on_friendadded(Messenger *m, int friendnumber)
 }
 /* CALLBACKS END */
 
-int add_window(Messenger *m, ToxWindow w)
+ToxWindow * new_window()
 {
     if (LINES < 2)
-        return -1;
- 
-    int i;
-    for(i = 0; i < MAX_WINDOWS_NUM; i++) {
-        if (windows[i].window) 
-            continue;
-        
-        w.window = newwin(LINES - 2, COLS, 0, 0);
-        if (w.window == NULL)
-            return -1;
+        return NULL;
 
-        windows[i] = w;
-        w.onInit(&w, m);
+    ToxWindow * tw = windows;
+    for(; tw < windows+MAX_WINDOWS_NUM; tw++)
+        if (tw->window == NULL) {
+            memset(tw, 0, sizeof(ToxWindow));
+            tw->window = newwin(LINES - 2, COLS, 0, 0);
+
+            if (tw->window == NULL)
+                return NULL;
+            
+            return tw;
+        }
     
-        active_window = windows+i;
-        return i;
-    }
-    
-    return -1;
+    return NULL;
 }
 
 /* Deletes window w and cleans up */
@@ -144,27 +139,21 @@ void set_next_window(int ch)
     }
 }
 
-void set_active_window(int index)
+void set_active_window(ToxWindow *w)
 {
-    if (index < 0 || index >= MAX_WINDOWS_NUM)
-        return;
-    
-    active_window = windows+index;
+    active_window = w;
 }
 
 ToxWindow *init_windows()
 {
-    int n_prompt = add_window(m, new_prompt());
+    prompt = new_prompt();
     
-    if (n_prompt == -1
-            || add_window(m, new_friendlist()) == -1
-            || add_window(m, new_dhtstatus()) == -1) {
+    if (!prompt || !new_friendlist() || !new_dhtstatus()) {
         fprintf(stderr, "add_window() failed.\n");
         endwin();
         exit(1);
     }
 
-    prompt = &windows[n_prompt];
     active_window = prompt;
     
     return prompt;

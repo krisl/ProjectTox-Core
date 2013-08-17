@@ -18,7 +18,7 @@ typedef struct {
     uint8_t name[MAX_NAME_LENGTH];
     uint8_t status[MAX_STATUSMESSAGE_LENGTH];
     int num;
-    int chatwin;
+    ToxWindow *chatwin;
 } friend_t;
 
 static friend_t friends[MAX_FRIENDS_NUM];
@@ -46,8 +46,8 @@ void friendlist_onMessage(ToxWindow *self, Messenger *m, int num, uint8_t *str, 
     if (num >= num_friends)
         return;
 
-    if (friends[num].chatwin == -1) {
-        friends[num].chatwin = add_window(m, new_chat(m, num));
+    if (friends[num].chatwin == NULL) {
+        friends[num].chatwin = new_chat(m, num);
     }
 }
 
@@ -80,7 +80,7 @@ int friendlist_onFriendAdded(Messenger *m, int num)
     getname(m, num, friends[num_friends].name);
     strcpy((char *) friends[num_friends].name, "unknown");
     strcpy((char *) friends[num_friends].status, "unknown");
-    friends[num_friends++].chatwin = -1;
+    friends[num_friends++].chatwin = NULL;
     return 0;
 }
 
@@ -94,10 +94,10 @@ static void friendlist_onKey(ToxWindow *self, Messenger *m, int key)
             num_selected = (num_selected + 1) % num_friends;
     } else if (key == '\n') {
         /* Jump to chat window if already open */
-        if (friends[num_selected].chatwin != -1) {
+        if (friends[num_selected].chatwin != NULL) {
             set_active_window(friends[num_selected].chatwin);
         } else {
-            friends[num_selected].chatwin = add_window(m, new_chat(m, num_selected));
+            friends[num_selected].chatwin = new_chat(m, num_selected);
         }
     }
 }
@@ -137,27 +137,20 @@ static void friendlist_onDraw(ToxWindow *self)
 
 void disable_chatwin(int f_num)
 {
-    friends[f_num].chatwin = -1;
+    friends[f_num].chatwin = NULL;
 }
 
-static void friendlist_onInit(ToxWindow *self, Messenger *m)
+ToxWindow * new_friendlist()
 {
-
-}
-
-ToxWindow new_friendlist()
-{
-    ToxWindow ret;
-    memset(&ret, 0, sizeof(ret));
-
-    ret.onKey = &friendlist_onKey;
-    ret.onDraw = &friendlist_onDraw;
-    ret.onInit = &friendlist_onInit;
-    ret.onMessage = &friendlist_onMessage;
-    ret.onAction = &friendlist_onMessage;    // Action has identical behaviour to message
-    ret.onNickChange = &friendlist_onNickChange;
-    ret.onStatusChange = &friendlist_onStatusChange;
-
-    strcpy(ret.title, "[friends]");
-    return ret;
+    ToxWindow *w = new_window();
+    if (w) {
+        w->onKey = &friendlist_onKey;
+        w->onDraw = &friendlist_onDraw;
+        w->onMessage = &friendlist_onMessage;
+        w->onAction = &friendlist_onMessage;    // Action has identical behaviour to message
+        w->onNickChange = &friendlist_onNickChange;
+        w->onStatusChange = &friendlist_onStatusChange;
+        strcpy(w->title, "[friends]");
+    }
+    return w;
 }
